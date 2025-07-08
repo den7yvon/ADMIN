@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EPI Admin Dashboard</title>
+  <link rel="shortcut icon" type="image/x-icon" href="FAVICON LOGO.jpg">
+  <style>
+    body {margin: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;}
+
+    .top-nav {display: flex; justify-content: space-between; align-items: center; background-color: #2f0fe4;
+      color: white; padding: 1rem; position: relative;}
+
+    .menu-icon, .user-icon {font-size: 24px; cursor: pointer;}
+
+    .page-title {font-size: 18px; font-weight: bold;}
+
+    .dropdown-menu {position: absolute; top: 60px; left: 10px; background-color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      border-radius: 8px; display: none; flex-direction: column; z-index: 1000;}
+
+    .dropdown-menu a {text-decoration: none; color: #2f0fe4; padding: 10px 20px; display: flex; align-items: center;
+      border-bottom: 1px solid #eee;}
+
+    .dropdown-menu a:hover {background-color: #f0f0ff;}
+
+    .dropdown-menu a::before {content: "➤"; margin-right: 10px;}
+
+    .user-dropdown {position: absolute; top: 60px; right: 10px; background-color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      border-radius: 8px; display: none; flex-direction: column; z-index: 1000;}
+
+    .user-dropdown button {background: none; border: none; padding: 10px 20px; color: #2f0fe4; font-size: 16px;
+      text-align: left; cursor: pointer;}
+
+    .user-dropdown button:hover {background-color: #f0f0ff;}
+
+    footer {position: fixed; bottom: 0; left: 0; width: 100%; background-color: #2f0fe4; color: white; text-align: center;
+      padding: 10px 0; font-size: 14px;}
+
+    .user-icon {width: 32px; height: 32px; border-radius: 50%; background: white; border: 2px solid #fff;
+      display: inline-block; position: relative;}
+
+    .user-icon::after {content: ""; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 12px;
+      height: 12px; background: #2f0fe4; border-radius: 50%;}
+
+    #pageLoader {position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9);
+      z-index: 9999; display: flex; align-items: center; justify-content: center;}
+
+    .spinner {border: 6px solid #ccc; border-top: 6px solid #2f0fe4; border-radius: 50%; width: 40px; height: 40px;
+      animation: spin 1s linear infinite;}
+
+    @keyframes spin {0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); }}
+
+    .announcements-page {max-width: 700px; margin: 30px auto; padding: 20px; text-align: center;}
+
+    .new-announcement-box {background: rgb(216, 216, 233); padding: 15px; border-radius: 12px; box-shadow: 0 0 8px rgba(0,0,0,0.05);
+        margin-bottom: 20px; border-left: 6px solid blue; border-right: 6px solid blue;}
+
+    .new-announcement-box textarea {width: 90%; min-height: 80px; padding: 10px; border-radius: 8px;
+        border: 1px solid #ccc; resize: none; font-size: 14px;}
+
+    .new-announcement-box button {margin-top: 10px; padding: 8px 16px; border: none; border-radius: 8px; background: #007bff;
+        color: #fff; cursor: pointer; font-weight: bold;}
+
+    .new-announcement-box button:hover {background: #0056b3;}
+
+    .announcements-container {display: flex; flex-direction: column; gap: 15px;}
+
+    .announcement-box {background: #99e5e5; padding: 15px; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.03);
+        position: relative; text-align: left; border-left: 6px solid blue; border-top: 6px solid blue;}
+
+    .announcement-header {display: flex; justify-content: space-between; font-size: 12px; color: #666;}
+
+    .announcement-text {margin-top: 10px; font-size: 15px; color: #333; white-space: pre-wrap; font-weight: bold;}
+
+    .three-dots {cursor: pointer; font-weight: bold; font-size: 18px;}
+
+    .edit-area {margin-top: 10px;}
+
+    .edit-area textarea {width: 90%; min-height: 60px; padding: 8px; margin-top: 10px; border-radius: 6px;
+        border: 1px solid #bbb;}
+
+    .edit-area button {margin-top: 8px; padding: 5px 12px; border-radius: 6px; border: none; background: #28a745;
+        color: #fff; cursor: pointer;}
+
+    .new-announcement-box input[type="text"] {width: 95%; padding: 8px; border-radius: 8px; border: 1px solid #ccc;
+        margin-bottom: 8px; font-size: 14px;}
+  </style>
+</head>
+<body>
+    <!-- Loader Spinner -->
+    <div id="pageLoader">
+        <div class="spinner"></div>
+    </div>  
+
+    <!-- Top Navigation -->
+    <div class="top-nav">
+        <div>
+        <span class="menu-icon" onclick="toggleMenu()">☰</span>
+        <span class="page-title" id="activePage">Dashboard</span>
+        </div>
+        <div class="user-icon" onclick="toggleUserMenu()"></div>
+
+    </div>
+
+    <!-- Dropdown Menu -->
+    <div class="dropdown-menu" id="menuDropdown">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="investment-plans.html">Investment Plans</a>
+        <a href="announcements.html">Announcements</a>
+        <a href="admin.html">Admin</a>
+    </div>
+
+    <!-- User Menu -->
+    <div class="user-dropdown" id="userDropdown">
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Main Content Placeholder -->
+    <div style="text-align: center;">
+        <h2>Welcome, Admin 👋</h2>
+        <p>Make announcements to users here.</p>
+    </div>
+
+    <div class="announcements-page">
+        <!-- New Announcement Input -->
+        <div class="new-announcement-box">
+          <input type="text" id="announcementTitleInput" placeholder="Announcement Title">
+          <textarea id="announcementMessageInput" placeholder="Write your announcement here..."></textarea>
+          <button onclick="addAnnouncement()">Send</button>
+          <div id="addLoader" class="loader" style="display:none;"></div>
+        </div>      
+        <!-- Announcements List -->
+        <div id="announcementsContainer" class="announcements-container"></div>      
+    </div>      
+      
+    <!-- Footer -->
+    <footer>
+        &copy; EPI Company Limited 2025
+    </footer>
+
+    <!-- Script -->
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+    const supabaseUrl = 'https://drivactdliyzcshlousw.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyaXZhY3RkbGl5emNzaGxvdXN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1NTY4ODUsImV4cCI6MjA2MjEzMjg4NX0.7NYTI6cZIjsQoxCwBjj4ELbSEvEQqrR66fNB3PNNVDo';
+
+    const { createClient } = supabase;
+    const client = createClient(supabaseUrl, supabaseKey);
+    </script>
+  
+    <script>
+        window.addEventListener("load", () => {
+        document.getElementById("pageLoader").style.display = "none";
+        });
+
+        // Optional global control for Supabase calls
+        function showLoader() {
+        document.getElementById("pageLoader").style.display = "flex";
+        }
+
+        function hideLoader() {
+        document.getElementById("pageLoader").style.display = "none";
+        }
+
+        const activePageName = "Announcements"; // Update this per page
+        document.getElementById("activePage").textContent = activePageName;
+
+        function toggleMenu() {
+            const menu = document.getElementById("menuDropdown");
+            menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+        }
+
+        function toggleUserMenu() {
+            const menu = document.getElementById("userDropdown");
+            menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+        }
+
+        function logout() {
+            window.location.href = "login.html"; // Adjust to your login page
+        }
+
+        // Optional: Close dropdowns when clicking outside
+        document.addEventListener("click", (e) => {
+        if (!e.target.closest(".top-nav") && !e.target.closest(".dropdown-menu")) {
+            document.getElementById("menuDropdown").style.display = "none";
+        }
+        if (!e.target.closest(".user-icon") && !e.target.closest(".user-dropdown")) {
+            document.getElementById("userDropdown").style.display = "none";
+        }
+        });
+
+        async function loadAnnouncements() {
+            const { data, error } = await client
+                .from('announcements')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                alert('Failed to load announcements.');
+                console.error(error);
+                return;
+            }
+
+            const container = document.getElementById('announcementsContainer');
+            container.innerHTML = '';
+
+            data.forEach(item => {
+                const dateTime = new Date(item.created_at).toLocaleString();
+
+                const box = document.createElement('div');
+                box.className = 'announcement-box';
+
+                box.innerHTML = `
+                <div class="announcement-header">
+                    <span>${dateTime}</span>
+                    <span class="three-dots" onclick="toggleActions('${item.id}')">&#8942;</span>
+                </div>
+
+                <h4 style="margin-top:10px; color:blue">${item.title}</h4>
+
+                <div class="announcement-text" id="text-${item.id}">${item.message}</div>
+
+                <div id="editArea-${item.id}" class="edit-area" style="display:none;">
+                    <input type="text" id="editTitle-${item.id}" value="${item.title}" placeholder="Title">
+                    <textarea id="editMessage-${item.id}">${item.message}</textarea>
+                    <button onclick="updateAnnouncement('${item.id}')">Update</button>
+                    <div id="editLoader-${item.id}" class="loader" style="display:none;"></div>
+                    <button style="background:#dc3545;" onclick="confirmDeleteAnnouncement('${item.id}')">Delete</button>
+                </div>
+                `;
+                container.appendChild(box);
+            });
+        }
+
+        function toggleActions(id) {
+            const area = document.getElementById(`editArea-${id}`);
+            area.style.display = area.style.display === 'block' ? 'none' : 'block';
+        }
+
+        async function addAnnouncement() {
+            const title = document.getElementById('announcementTitleInput').value.trim();
+            const message = document.getElementById('announcementMessageInput').value.trim();
+            const loader = document.getElementById('addLoader');
+
+            if (!title || !message) {
+                alert('Both Title and Message are required.');
+                return;
+            }
+            showLoader();
+
+            const { error } = await client
+                .from('announcements')
+                .insert([{ title, message }]);
+
+            if (!error) {
+                alert('Announcement added successfully.');
+                location.reload();
+            } else {
+                alert('Failed to add announcement.');
+            }
+            hideLoader();
+        }
+
+        async function updateAnnouncement(id) {
+            const newTitle = document.getElementById(`editTitle-${id}`).value.trim();
+            const newMessage = document.getElementById(`editMessage-${id}`).value.trim();
+            const loader = document.getElementById(`editLoader-${id}`);
+
+            if (!newTitle || !newMessage) {
+                alert('Both Title and Message are required.');
+                return;
+            }
+            showLoader();
+
+            const { error } = await client
+                .from('announcements')
+                .update({ title: newTitle, message: newMessage })
+                .eq('id', id);            
+
+            if (!error) {
+                alert('Announcement edited successfully.');
+                location.reload();
+            } else {
+                alert('Failed to edit announcement.');
+            }
+            hideLoader();
+        }
+
+        async function confirmDeleteAnnouncement(id) {
+            if (!confirm('Are you sure you want to delete this announcement?')) return;
+
+            const loader = document.getElementById(`editLoader-${id}`);
+            showLoader();
+
+            const { error } = await client
+                .from('announcements')
+                .delete()
+                .eq('id', id);
+
+            if (!error) {
+                alert('Announcement deleted successfully.');
+                location.reload();
+            } else {
+                alert('Failed to delete announcement.');
+            }
+            hideLoader();
+        }
+
+        loadAnnouncements();
+  </script>
+</body>
+</html>

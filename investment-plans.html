@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EPI Admin Dashboard</title>
+  <link rel="shortcut icon" type="image/x-icon" href="FAVICON LOGO.jpg">
+  <style>
+    body {margin: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;}
+
+    .top-nav {display: flex; justify-content: space-between; align-items: center; background-color: #2f0fe4;
+      color: white; padding: 1rem; position: relative;}
+
+    .menu-icon, .user-icon {font-size: 24px; cursor: pointer;}
+
+    .page-title {font-size: 18px; font-weight: bold;}
+
+    .dropdown-menu {position: absolute; top: 60px; left: 10px; background-color: white; border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2); display: none; flex-direction: column; z-index: 1000;}
+
+    .dropdown-menu a {text-decoration: none; color: #2f0fe4; padding: 10px 20px; display: flex; align-items: center;
+      border-bottom: 1px solid #eee;}
+
+    .dropdown-menu a:hover {background-color: #f0f0ff;}
+
+    .dropdown-menu a::before {content: "➤"; margin-right: 10px;}
+
+    .user-dropdown {position: absolute; top: 60px; right: 10px; background-color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      border-radius: 8px; display: none; flex-direction: column; z-index: 1000;}
+
+    .user-dropdown button {background: none; border: none; padding: 10px 20px; color: #2f0fe4; font-size: 16px;
+      text-align: left; cursor: pointer;}
+
+    .user-dropdown button:hover {background-color: #f0f0ff;}
+
+    footer {position: fixed; bottom: 0; left: 0; width: 100%; background-color: #2f0fe4; color: white; text-align: center;
+      padding: 10px 0; font-size: 14px;}
+
+    .user-icon {width: 32px; height: 32px; border-radius: 50%; background: white; border: 2px solid #fff;
+      display: inline-block; position: relative;}
+
+    .user-icon::after {content: ""; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 12px;
+      height: 12px; background: #2f0fe4; border-radius: 50%;}
+
+    #pageLoader {position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9);
+      z-index: 9999; display: flex; align-items: center; justify-content: center;}
+
+    .spinner {border: 6px solid #ccc; border-top: 6px solid #2f0fe4; border-radius: 50%; width: 40px; height: 40px;
+      animation: spin 1s linear infinite;}
+
+    @keyframes spin {0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); }}
+
+    .plans-page {display: flex; flex-direction: column; gap: 20px; padding: 20px;}
+
+    .plan-category-box {background: linear-gradient(135deg, lime,rgb(54, 231, 208), lime); padding: 15px;
+      border-radius: 12px; box-shadow: 0 0 8px rgba(0,0,0,0.05);}
+
+    .plan-category-box h3 {margin-bottom: 10px; font-size: 1.3rem; color: #333; text-align: center;}
+
+    .plans-container {display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px;}
+
+    .plan-box {background: #fff; padding: 10px; width: 220px; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.05);
+      position: relative;}
+
+    .plan-box p {margin: 5px 0; font-size: 0.9rem; color: #555;}
+
+    .plan-box .buttons {display: flex; justify-content: space-between; margin-top: 8px;}
+
+    .plan-box .edit-section {margin-top: 8px; display: none; flex-direction: column; gap: 5px;}
+
+    .plan-box input {padding: 5px; border-radius: 6px; border: 1px solid #ccc;}
+
+    button {padding: 6px 10px; border: none; border-radius: 8px; background: #007bff; color: #fff; cursor: pointer;}
+
+    button:hover {background: #0056b3;}
+
+    .modal {display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);
+      justify-content: center; align-items: center;}
+
+    .modal-content {background: #fff; padding: 20px; border-radius: 12px; min-width: fit-content; position: relative;}
+
+    .modal-content .close {position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer;}
+
+    .addplanbtn{padding: 6px 10px; border: none; border-radius: 8px; background: #007bff; color: #fff; cursor: pointer;
+      min-width: 100%; align-items: center; font-weight: bold;}
+
+    .line-separator {border-top: 2px solid #3a14e4; margin: 10px 0; width: 100%;}
+
+    .inputs{border: 2px solid blue; margin-bottom: 5px; border-radius: 10px; padding: 4px 6px;}
+  </style>
+</head>
+<body>
+    <!-- Loader Spinner -->
+    <div id="pageLoader">
+      <div class="spinner"></div>
+    </div>  
+
+    <!-- Top Navigation -->
+    <div class="top-nav">
+      <div>
+        <span class="menu-icon" onclick="toggleMenu()">☰</span>
+        <span class="page-title" id="activePage">Dashboard</span>
+      </div>
+      <div class="user-icon" onclick="toggleUserMenu()"></div>
+
+    </div>
+
+    <!-- Dropdown Menu -->
+    <div class="dropdown-menu" id="menuDropdown">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="investment-plans.html">Investment Plans</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="admin.html">Admin</a>
+    </div>
+
+    <!-- User Menu -->
+    <div class="user-dropdown" id="userDropdown">
+      <button onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Main Content Placeholder -->
+    <div style="text-align: center;">
+      <h2>Welcome, Admin 👋</h2>
+      <p>These are the available investment plans.</p>
+    </div>
+
+    <div class="plans-page">
+      <div class="line-separator"></div>
+
+      <!-- Small Packages -->
+      <div class="plan-category-box">
+        <h3>Small Packages</h3>
+        <div id="smallPlansContainer" class="plans-container"></div>
+        <button class="addplanbtn" onclick="openAddPlanModal('Small')">Add Plan</button>
+      </div>
+      <div class="line-separator"></div>
+      <!-- Middle Packages -->
+      <div class="plan-category-box">
+        <h3>Middle Packages</h3>
+        <div id="middlePlansContainer" class="plans-container"></div>
+        <button class="addplanbtn" onclick="openAddPlanModal('Middle')">Add Plan</button>
+      </div>
+      <div class="line-separator"></div>
+      <!-- High End Packages -->
+      <div class="plan-category-box">
+        <h3>High End Packages</h3>
+        <div id="highPlansContainer" class="plans-container"></div>
+        <button class="addplanbtn" onclick="openAddPlanModal('High End')">Add Plan</button>
+      </div>
+      <div class="line-separator"></div>
+    </div>
+    <div class="line-separator"></div>
+    
+    <!-- ADD PLAN MODAL -->
+    <div id="addPlanModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeAddPlanModal()">&times;</span>
+        <h3>Add Plan</h3>
+        <div><input class="inputs" type="number" id="addPrincipal" placeholder="Principal"></div>
+        <div><input class="inputs" type="number" id="addRate" placeholder="Rate"></div>
+        <div><input class="inputs" type="number" id="addDaily" placeholder="Daily"></div>
+      
+        <div><button onclick="addNewPlan()">Complete</button></div>
+      </div>
+    </div>
+    
+
+    <!-- Footer -->
+    <footer>
+      &copy; EPI Company Limited 2025
+    </footer>
+
+    <!-- Script -->
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+      const supabaseUrl = 'https://drivactdliyzcshlousw.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyaXZhY3RkbGl5emNzaGxvdXN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1NTY4ODUsImV4cCI6MjA2MjEzMjg4NX0.7NYTI6cZIjsQoxCwBjj4ELbSEvEQqrR66fNB3PNNVDo';
+
+      const { createClient } = supabase;
+      const client = createClient(supabaseUrl, supabaseKey);
+    </script>
+
+    <script>
+      window.addEventListener("load", () => {
+        document.getElementById("pageLoader").style.display = "none";
+      });
+
+      // Optional global control for Supabase calls
+      function showLoader() {
+        document.getElementById("pageLoader").style.display = "flex";
+      }
+
+      function hideLoader() {
+        document.getElementById("pageLoader").style.display = "none";
+      }
+
+      const activePageName = "Investment Plans"; // Update this per page
+      document.getElementById("activePage").textContent = activePageName;
+
+      function toggleMenu() {
+        const menu = document.getElementById("menuDropdown");
+        menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+      }
+
+      function toggleUserMenu() {
+        const menu = document.getElementById("userDropdown");
+        menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+      }
+
+      function logout() {
+        window.location.href = "login.html"; // Adjust to your login page
+      }
+
+      // Optional: Close dropdowns when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".top-nav") && !e.target.closest(".dropdown-menu")) {
+          document.getElementById("menuDropdown").style.display = "none";
+        }
+        if (!e.target.closest(".user-icon") && !e.target.closest(".user-dropdown")) {
+          document.getElementById("userDropdown").style.display = "none";
+        }
+      });
+
+      let currentAddCategory = '';
+      async function loadInvestmentPlans() {
+        const { data: plans, error } = await client
+          .from('investment_plans')
+          .select('*');
+
+        if (error) {
+          console.error(error);
+          return;
+        }
+
+        const { data: investments } = await client
+          .from('investments')
+          .select('principal');
+
+        const smallContainer = document.getElementById('smallPlansContainer');
+        const middleContainer = document.getElementById('middlePlansContainer');
+        const highContainer = document.getElementById('highPlansContainer');
+
+        smallContainer.innerHTML = '';
+        middleContainer.innerHTML = '';
+        highContainer.innerHTML = '';
+
+        const sortedPlans = plans.sort((a, b) => a.principal - b.principal);
+
+        sortedPlans.forEach(plan => {
+          const investorsCount = investments.filter(inv => parseFloat(inv.principal) === parseFloat(plan.principal)).length;
+
+          const planHTML = `
+            <div class="plan-box" id="plan-${plan.id}">
+              <p><strong>Principal:</strong> Ksh.${plan.principal}</p>
+              <p><strong>Rate:</strong> ${plan.compounding_rate}%</p>
+              <p><strong>Daily:</strong> Ksh.${plan.daily_earning}</p>
+              <p><strong>Investors:</strong> ${investorsCount}</p>
+              <div class="buttons">
+                <button onclick="toggleEdit('${plan.id}')">Edit</button>
+                <button onclick="deletePlan('${plan.id}')">Delete</button>
+              </div>
+              <div id="editSection-${plan.id}" class="edit-section">
+                <input type="number" id="editPrincipal-${plan.id}" value="${plan.principal}">
+                <input type="number" id="editRate-${plan.id}" value="${plan.compounding_rate}">
+                <input type="number" id="editDaily-${plan.id}" value="${plan.daily_earning}">
+                <button onclick="updatePlan('${plan.id}')">Update</button>
+                <div id="loader-${plan.id}" class="loader" style="display:none;"></div>
+              </div>
+            </div>
+          `;
+
+          if (plan.category === 'Small') smallContainer.insertAdjacentHTML('beforeend', planHTML);
+          else if (plan.category === 'Middle') middleContainer.insertAdjacentHTML('beforeend', planHTML);
+          else if (plan.category === 'High End') highContainer.insertAdjacentHTML('beforeend', planHTML);
+        });
+      }
+
+      function toggleEdit(planId) {
+        const section = document.getElementById(`editSection-${planId}`);
+        section.style.display = section.style.display === 'flex' ? 'none' : 'flex';
+      }
+
+      async function updatePlan(planId) {
+        const principal = parseFloat(document.getElementById(`editPrincipal-${planId}`).value);
+        const compounding_rate = parseFloat(document.getElementById(`editRate-${planId}`).value);
+        const daily_earning = parseFloat(document.getElementById(`editDaily-${planId}`).value);
+        const loader = document.getElementById(`loader-${planId}`);
+        
+        showLoader();
+
+        const { error } = await client
+          .from('investment_plans')
+          .update({ principal, compounding_rate, daily_earning })
+          .eq('id', planId);
+
+        if (!error) {
+          alert('Plan updated successfully.');
+          location.reload();
+        } else {
+          alert('Error updating plan.');
+        }
+        hideLoader();
+      }
+
+      async function deletePlan(planId) {
+        if (!confirm('Are you sure you want to delete this plan?')) return;
+        
+        const loader = document.getElementById(`loader-${planId}`);
+        showLoader();
+
+        const { error } = await client
+          .from('investment_plans')
+          .delete()
+          .eq('id', planId);
+
+        if (!error) {
+          alert('Plan deleted successfully.');
+          location.reload();
+        } else {
+          alert('Error deleting plan.');
+        }  
+        hideLoader();
+      }
+
+      function openAddPlanModal(category) {
+        currentAddCategory = category;
+        document.getElementById('addPlanModal').style.display = 'flex';
+      }
+
+      function closeAddPlanModal() {
+        document.getElementById('addPlanModal').style.display = 'none';
+      }
+
+      async function addNewPlan() {
+        const principalInput = document.getElementById('addPrincipal').value.trim();
+        const rateInput = document.getElementById('addRate').value.trim();
+        const dailyInput = document.getElementById('addDaily').value.trim();
+        const loader = document.getElementById('addPlanLoader');
+
+        // Check if any field is empty
+        if (!principalInput || !rateInput || !dailyInput) {
+          alert('All fields are required.');
+          return;
+        }
+
+        const principal = parseFloat(principalInput);
+        const compounding_rate = parseFloat(rateInput);
+        const daily_earning = parseFloat(dailyInput);
+
+        if (principal <= 0 || compounding_rate <= 0 || daily_earning <= 0) {
+        alert('All values must be greater than zero.');
+        return;
+      }
+        showLoader();
+
+        const { error } = await client
+          .from('investment_plans')
+          .insert([{ category: currentAddCategory, principal, compounding_rate, daily_earning }]);
+
+        if (!error) {
+          alert('Plan added successfully.');
+          location.reload();
+        } else {
+          alert('Error adding plan.');
+        }
+
+        hideLoader();
+      }
+
+      loadInvestmentPlans();
+  </script>
+</body>
+</html>

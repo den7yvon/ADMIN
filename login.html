@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EPI Admin Login</title>
+  <link rel="shortcut icon" type="image/x-icon" href="FAVICON LOGO.jpg">
+  <style>
+    * {margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif;}
+
+    body {background: linear-gradient(to right, #0f2027, #2f0fe4, #0f2027); height: 100vh; display: flex;
+      align-items: center; justify-content: center;}
+
+    .login-container {background-color: #ffffff; padding: 2rem; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      width: 100%; max-width: 400px; text-align: center;}
+
+    .login-container h1 {font-size: 24px; color: #4730cc; margin-bottom: 0.5rem;}
+
+    .login-container h2 {font-size: 18px; margin-bottom: 1.5rem; color: #323181;}
+
+    .login-container input {width: 100%; padding: 10px; margin: 0.5rem 0; border: 1px solid #371ec0; border-radius: 8px;
+      font-size: 16px;}
+
+    .login-container button {background: linear-gradient(to right, #0f2027, #2f0fe4, #0f2027); color: white;
+      border: none; padding: 10px; margin-top: 1rem; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold;
+      cursor: pointer; transition: background-color 0.3s ease;}
+
+    .login-container button:hover {background-color: #1a3b50;}
+
+    .error-message {color: red; margin-top: 10px; font-size: 14px;}
+
+    .locked-message {font-size: 18px; font-weight: bold; color: red; animation: blink 1s infinite; margin-top: 20px;}
+
+    @keyframes blink {0%, 100% { opacity: 1; } 50% { opacity: 0; }}
+
+    #secret-dot {position: fixed; bottom: 10px; right: 10px; width: 12px; height: 12px; background-color: transparent;
+        cursor: pointer; z-index: 999;}
+
+    #secret-dot:hover {background-color: rgba(0,0,0,0.1); border-radius: 50%;}
+
+    #unlock-container {display: none; position: fixed; bottom: 60px; right: 10px; background: white; padding: 10px;
+        border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.2);}
+
+    #unlock-container button{background: linear-gradient(to right, #0f2027, #2f0fe4, #0f2027); font-weight: bold; 
+        color: white; border-radius: 10px;}
+
+    #unlock-container input{ border-radius: 10px; border: 1px solid blue; padding: 7px;}
+  </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>WELCOME TO EPI</h1>
+        <h2>ADMIN LOGIN</h2>
+        <input type="text" id="username" placeholder="Enter username" />
+        <input type="password" id="password" placeholder="Enter password" />
+        <button onclick="handleLogin()">Login</button>
+        <div class="error-message" id="error"></div>
+    </div>
+
+    <!-- Secret dot & unlock field -->
+    <div id="secret-dot" onclick="showUnlockInput()"></div>
+    <div id="unlock-container">
+        <input type="text" id="unlockKeyInput" placeholder="Enter unlock key" />
+        <button onclick="unlockSystem()">Unlock</button>
+    </div>
+
+    <audio id="lockSound" src="alert.mp3" preload="auto"></audio>
+<script>
+    const ADMIN_CREDENTIALS = {
+      username: atob("QWRtaW4="), // 'Admin'
+      password: atob("QWRtaW5FUEk=") // 'AdminEPI'
+    };
+  
+    const MAX_ATTEMPTS = 3;
+    const LOCK_KEY = 'admin_lockout';
+    const ATTEMPT_KEY = 'admin_attempts';
+  
+    const loginContainer = document.querySelector('.login-container');
+    const errorDiv = document.getElementById("error");
+  
+    window.onload = () => {
+      if (localStorage.getItem(LOCK_KEY) === "true") {
+        showLockedMessage();
+      }
+    };
+  
+    function handleLogin() {
+        const inputUsername = document.getElementById("username").value.trim();
+        const inputPassword = document.getElementById("password").value.trim();
+  
+        if (
+            inputUsername === ADMIN_CREDENTIALS.username &&
+            inputPassword === ADMIN_CREDENTIALS.password
+        ) {
+        // Clear lock and redirect
+        localStorage.removeItem(LOCK_KEY);
+        localStorage.removeItem(ATTEMPT_KEY);
+        errorDiv.textContent = "";
+        window.location.href = "dashboard.html";
+        } else {
+        let attempts = parseInt(localStorage.getItem(ATTEMPT_KEY) || "0") + 1;
+        localStorage.setItem(ATTEMPT_KEY, attempts);
+  
+        if (attempts >= MAX_ATTEMPTS) {
+          localStorage.setItem(LOCK_KEY, "true");
+          showLockedMessage();
+        } else {
+          errorDiv.textContent = `Invalid login. Attempt ${attempts} of ${MAX_ATTEMPTS}.`;
+        }
+        }
+    }
+  
+    function showLockedMessage() {
+        loginContainer.innerHTML = `<div class="locked-message">⚠️ SYSTEM LOCKED: Unauthorized Access Detected!!!</div>`;
+        const sound = document.getElementById("lockSound");
+        if (sound) {
+            sound.play().catch(e => {
+            console.log("Sound blocked by browser until user interacts");
+            });
+        }
+    }
+
+    function showUnlockInput() {
+        document.getElementById("unlock-container").style.display = "block";
+    }
+  
+    function unlockSystem() {
+        const key = document.getElementById("unlockKeyInput").value.trim();
+        if (key === "ADMINUNLOCKKEY") {
+            localStorage.removeItem(LOCK_KEY);
+            localStorage.removeItem(ATTEMPT_KEY);
+            location.reload(); // reload to show login form again
+        } else {
+            alert("Invalid unlock key.");
+        }
+    }
+</script>  
+</body>
+</html>

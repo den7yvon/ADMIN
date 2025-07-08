@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EPI Admin Dashboard</title>
+  <link rel="shortcut icon" type="image/x-icon" href="FAVICON LOGO.jpg">
+  <style>
+    body {margin: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;}
+
+    .top-nav {display: flex; justify-content: space-between; align-items: center; background-color: #2f0fe4;
+      color: white; padding: 1rem; position: relative;}
+
+    .menu-icon, .user-icon {font-size: 24px; cursor: pointer;}
+
+    .page-title {font-size: 18px; font-weight: bold;}
+
+    .dropdown-menu {position: absolute; top: 60px; left: 10px; background-color: white; border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2); display: none; flex-direction: column; z-index: 1000;}
+
+    .dropdown-menu a {text-decoration: none; color: #2f0fe4; padding: 10px 20px; display: flex; align-items: center;
+      border-bottom: 1px solid #eee;}
+
+    .dropdown-menu a:hover {background-color: #f0f0ff;}
+
+    .dropdown-menu a::before {content: "➤"; margin-right: 10px;}
+
+    .user-dropdown {position: absolute; top: 60px; right: 10px; background-color: white; border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2); display: none; flex-direction: column; z-index: 1000;}
+
+    .user-dropdown button {background: none; border: none; padding: 10px 20px; color: #2f0fe4; font-size: 16px;
+      text-align: left; cursor: pointer;}
+
+    .user-dropdown button:hover {background-color: #f0f0ff;}
+
+    footer {position: fixed; bottom: 0; left: 0; width: 100%; background-color: #2f0fe4; color: white;
+      text-align: center; padding: 10px 0; font-size: 14px;}
+
+    .user-icon {width: 32px; height: 32px; border-radius: 50%; background: white; border: 2px solid #fff;
+      display: inline-block; position: relative;}
+
+    .user-icon::after {content: ""; position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);
+      width: 12px; height: 12px; background: #2f0fe4; border-radius: 50%;}
+
+    #pageLoader {position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9);
+      z-index: 10000; display: flex; align-items: center; justify-content: center;}
+
+    .spinner {border: 6px solid #ccc; border-top: 6px solid #2f0fe4; border-radius: 50%; width: 40px; height: 40px;
+      animation: spin 1s linear infinite;}
+
+    @keyframes spin {0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); }}
+
+    #userListContainer {display: flex; flex-direction: column; align-items: center; gap: 1px;}
+
+    .user-box {background-color: #fff; border-radius: 10px; padding: 10px 15px; margin-bottom: 10px; display: flex;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); align-items: center; width: 300px; justify-content: space-between;
+      cursor: pointer;}
+
+    .user-box:hover {background-color: #f9f9ff;}
+
+    .new-badge {background-color: red; color: white; font-size: 10px; padding: 2px 6px; border-radius: 12px;
+      margin-left: 8px;}
+
+    .user-modal {position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); display: flex;
+      align-items: center; justify-content: center; z-index: 9999;}
+
+    .user-modal-content {background: white; padding: 20px; border-radius: 10px; width: 300px; text-align: left;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);}
+
+    .confirmUserBtn{ background-color: blue; color: white; font-weight: bold; cursor: pointer; border: blue;
+      border-radius: 10px; padding: 6px 4px;}
+
+    .confirmUserBtn:hover{background-color: green; border: green;}
+
+    .close-btn {float: right; font-size: 20px; cursor: pointer;}
+
+    .modal {position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; 
+      justify-content: center; background: rgba(0,0,0,0.5); z-index: 9999;}
+
+    .modal-content {background: #fff; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2); max-height: 80vh; overflow-y: auto;}
+
+    .user-details-header {display: flex; justify-content: space-between; align-items: center;}
+
+    .edit-btn, .save-btn, .close-btn {background-color: #2f0fe4; color: white; border: none; padding: 8px 12px;
+      border-radius: 6px; cursor: pointer; margin-top: 10px;}
+
+    .edit-btn:hover, .save-btn:hover, .close-btn:hover {background-color: #1e08a8;}
+
+    input {width: 100%; padding: 8px; margin: 5px 0; border-radius: 6px; border: 1px solid #ccc;}
+
+    .user-investments-section h3 {margin-top: 20px; margin-bottom: 10px; color: #333;}
+
+    .investment-card {background: #f9f9f9; border-radius: 8px; padding: 10px 15px; margin-bottom: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-size: 14px;}
+
+    .investment-card h4 {margin-bottom: 8px; color: #444;}
+
+    .investment-card .investment-line {margin-bottom: 6px;}
+
+    .investment-buttons {margin-top: 10px; display: flex; gap: 10px;}
+
+    .investment-buttons button {background-color: #2f0fe4; color: white; border: none; padding: 5px 10px;
+      border-radius: 6px; cursor: pointer; font-size: 12px;}
+
+    .investment-buttons button:hover {background-color: #1e08a8;}
+
+    .investment-details {margin-top: 8px; padding-left: 5px; display: none; border-left: 2px solid #ccc;
+      font-size: 13px; color: #555;}
+
+    .user-notifications-section h3 {margin-top: 20px; margin-bottom: 10px; color: #333;}
+
+    .notification-card {background: #f1f1f1; padding: 10px; margin-bottom: 8px; border-radius: 8px;
+      border-left: 5px solid blue; border-top: 5px solid blue; position: relative; font-size: 13px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);}
+
+    .notification-card .notif-date {font-size: 11px; color: #666;}
+
+    .notification-card .notif-actions {position: absolute; top: 8px; right: 8px; cursor: pointer;}
+
+    .notification-card .notif-message {margin-top: 6px; color: #333; font-size: 13px;}
+
+    .send-notification-box {margin-top: 12px; display: flex; gap: 5px;}
+
+    .send-notification-box input {flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc;
+      font-size: 13px;}
+
+    .send-notification-box button {background-color: #2f0fe4; color: white; border: none; padding: 6px 6px;
+      border-radius: 6px; cursor: pointer; font-size: 13px;}
+
+    .send-notification-box button:hover {background-color: #1e08a8;}
+
+    .pending-badge {display: inline-block; background-color: blue; color: white; font-size: 15px; padding: 2px 6px;
+      border-radius: 50%; margin-left: 5px; min-width: 15px; min-height: 15px; text-align: center;}
+
+    .withdrawal-box {background-color: #fff; border-radius: 10px; padding: 10px 15px; margin-bottom: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-size: 14px; line-height: 1.5;}
+
+    .withdrawal-box button {margin-top: 10px; padding: 5px 10px; border: none; background: #2f0fe4; color: white;
+      border-radius: 6px; cursor: pointer; font-size: 13px;}
+
+    .withdrawal-box button:hover {background: #1c069d;}
+
+    .withdrawal-badge {background-color: green; color: #fff; border-radius: 5px; padding: 2px 6px; font-size: 12px;
+      margin-left: 5px; font-weight: bold;}
+
+    .user-chat-section {margin-top: 20px;}
+
+    .chat-box {background: #f9f9f9; border: 1px solid #ccc; height: 300px; overflow-y: auto; padding: 10px; border-radius: 8px;}
+
+    .chat-message {margin-bottom: 10px; position: relative; padding: 10px; border-radius: 8px; max-width: 70%;}
+
+    .chat-message.user {background-color: #e6e6e6; text-align: left; border-left: 4px solid blue;
+      border-top: 4px solid blue;}
+
+    .chat-message.admin {background-color: #d0e8ff; margin-left: auto; text-align: left; border-right: 4px solid blue;
+      border-bottom: 4px solid blue;}
+
+    .chat-date {font-size: 10px; color: #666; margin-bottom: 5px;}
+
+    .chat-actions {position: absolute; top: 5px; right: 8px; cursor: pointer;}
+
+    .chat-tick {font-size: 10px; color: blue; margin-top: 4px;}
+
+    .chat-options-menu {position: fixed; background: #fff; border: 1px solid #ccc; border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 1000;}
+
+    .chat-options-menu ul {list-style: none; padding: 8px; margin: 0;}
+
+    .chat-options-menu ul li {padding: 5px 10px; cursor: pointer;}
+
+    .chat-options-menu ul li:hover {background: #f0f0f0;}
+
+    .chat-badge {background-color: rgb(248, 15, 170); color: white; padding: 2px 5px; border-radius: 4px;
+      font-size: 12px; margin-left: 4px; font-weight: bold;}
+
+    .chat-input-area {display: flex; align-items: center; gap: 10px; padding: 10px; background: #f9f9f9;
+      border-top: 1px solid #ddd;}
+
+    .chat-input-area input[type="text"] {flex: 1; padding: 8px 10px; border: 1px solid #0b1bf7; border-radius: 10px;}
+
+    .chat-send-btn {padding: 8px 15px; background-color: #300cfc; border: none; border-radius: 5px; color: #fff;
+      cursor: pointer; font-weight: bold;}
+
+    .chat-send-btn:hover {background-color: #0056b3;}
+
+    .user-analysis {margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.05);}
+
+    .user-analysis h3 {margin-bottom: 10px; font-size: 1.4rem; color: #333;}
+
+    .investment-analysis-container {display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;}
+
+    .investment-box {padding: 12px; background: #fff; border-radius: 10px; box-shadow: 0 0 6px rgba(0,0,0,0.05);
+      border-left: 4px solid #007bff;}
+
+    .investment-box h4 {font-size: 1.1rem; margin-bottom: 8px; color: #007bff;}
+
+    .investment-box p {margin: 4px 0; font-size: 0.95rem; color: #555;}
+
+    .grand-totals-box {padding: 15px; background: #007bff; color: #fff; border-radius: 10px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.1);}
+
+    .grand-totals-box h4 {margin-bottom: 10px; font-size: 1.2rem;}
+
+    .grand-totals-box p {margin: 5px 0; font-size: 0.95rem;}
+  </style>
+</head>
+<body>
+    <!-- Loader Spinner -->
+    <div id="pageLoader">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- Top Navigation -->
+    <div class="top-nav">
+      <div>
+        <span class="menu-icon" onclick="toggleMenu()">☰</span>
+        <span class="page-title" id="activePage">Dashboard</span>
+      </div>
+      <div class="user-icon" onclick="toggleUserMenu()"></div>
+    </div>
+
+    <!-- Dropdown Menu -->
+    <div class="dropdown-menu" id="menuDropdown">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="investment-plans.html">Investment Plans</a>
+      <a href="announcements.html">Announcements</a>
+      <a href="admin.html">Admin</a>
+    </div>
+
+    <!-- User Menu -->
+    <div class="user-dropdown" id="userDropdown">
+      <button onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Main Content Placeholder -->
+    <div style="text-align: center;">
+      <h2>Welcome, Admin 👋</h2>
+      <p>This is your dashboard overview. Users will load here.</p>
+    </div>
+
+    <div id="userListContainer"></div>
+
+    <!-- User Details Modal -->
+    <div id="userModal" class="user-modal" style="display:none;">
+      <div class="user-modal-content">
+        <span class="close-btn" onclick="closeUserModal()">&times;</span>
+        <h3>User Details</h3>
+        <p id="modalFullName"></p>
+        <p id="modalUsername"></p>
+        <p id="modalUserId"></p>
+        <p id="modalPhone"></p>
+        <p id="modalPassword"></p>
+        <button id="confirmUserBtn" class="confirmUserBtn"style="display:none;" onclick="confirmUser()">Confirm User</button>
+      </div>
+    </div>
+
+    <div id="userDetailsModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <h2 id="userModalHeading">Welcome to User's Account</h2>
+
+        <div class="user-details-header">
+          <h3>User Details</h3>
+          <button onclick="toggleEditFields()" class="edit-btn">Edit ✏️</button>
+        </div>
+
+        <div id="userDetailsDisplay">
+          <p id="detailFullName"></p>
+          <p id="detailUsername"></p>
+          <p id="detailPhone"></p>
+          <p id="detailPassword"></p>
+        </div>
+
+        <div id="editUserFields" style="display: none; margin-top: 10px;">
+          <input type="text" id="editFirstName" placeholder="First Name"><br>
+          <input type="text" id="editMiddleName" placeholder="Middle Name"><br>
+          <input type="text" id="editLastName" placeholder="Last Name"><br>
+          <input type="text" id="editUsername" placeholder="Username"><br>
+          <input type="text" id="editPhone" placeholder="Phone Number"><br>
+          <input type="text" id="editPassword" placeholder="Password"><br>
+          <input type="text" id="editConfirmPassword" placeholder="Confirm Password"><br>
+          <button onclick="saveUserEdits()" class="save-btn">Save Changes</button>
+        </div>
+
+        <div class="user-investments-section">
+          <h3>User Investments</h3>
+          <div id="userInvestmentsContainer">
+            <!-- Investment cards will be loaded here dynamically -->
+          </div>
+        </div>
+        
+        <div class="user-section" id="userWithdrawalsSection">
+          <h3>User Withdrawals</h3>
+          <div id="userWithdrawalsContainer">
+            <p style="font-size: 12px; color: #888;">Loading withdrawals...</p>
+          </div>
+        </div>
+        
+        <div class="user-notifications-section">
+          <h3>User Notifications</h3>
+          <div id="userNotificationsContainer">
+            <!-- Notifications will be loaded here dynamically -->
+          </div>
+        
+          <div class="send-notification-box">
+            <input type="text" id="notificationMessage" placeholder="Send User a notification">
+            <button onclick="sendNotification()">Send</button>
+          </div>
+        </div>
+        
+        <div class="user-chat-section">
+          <h3>User Chat</h3>
+          <div id="chatBox" class="chat-box"></div>
+        
+          <div class="chat-input-area">
+            <input type="text" id="adminChatMessage" placeholder="Type your message..." />
+            <button class="chat-send-btn" onclick="sendAdminMessage()">Send</button>
+          </div>
+        </div>
+        
+        <div id="chatOptionsMenu" class="chat-options-menu" style="display:none;">
+          <ul id="chatOptionsList"></ul>
+        </div>
+      
+        <!-- USER ANALYSIS SECTION -->
+        <div class="user-analysis">
+          <h3>User Analysis</h3>
+
+          <div id="investmentAnalysisContainer" class="investment-analysis-container">
+            <!-- Investment boxes will be injected here by JavaScript -->
+          </div>
+
+          <div class="grand-totals-box">
+            <h4>Grand Totals</h4>
+            <p>Total Investments: <span id="totalInvestments">0</span></p>
+            <p>Total Principal: Ksh.<span id="totalPrincipal">0.00</span></p>
+            <p>Earnings Balance: Ksh.<span id="totalEarningsBalance">0.00</span></p>
+            <p>Total Earnings: Ksh.<span id="totalTotalEarnings">0.00</span></p>
+            <p>Total Withdrawals: Ksh.<span id="totalCompletedWithdrawals">0.00</span></p>
+          </div>
+        </div>
+
+        <button onclick="closeUserDetailsModal()" class="close-btn">Close</button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      &copy; EPI Company Limited 2025
+    </footer>
+
+    <!-- Script -->
+    <!-- Supabase -->
+      <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+      <script>
+        const supabaseUrl = 'https://drivactdliyzcshlousw.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRyaXZhY3RkbGl5emNzaGxvdXN3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1NTY4ODUsImV4cCI6MjA2MjEzMjg4NX0.7NYTI6cZIjsQoxCwBjj4ELbSEvEQqrR66fNB3PNNVDo';
+
+        const { createClient } = supabase;
+        const client = createClient(supabaseUrl, supabaseKey);
+      </script>
+    <!--Main Scripts-->
+    <script>
+      window.addEventListener("load", () => {
+        document.getElementById("pageLoader").style.display = "none";
+      });
+
+      // Optional global control for Supabase calls
+      function showLoader() {
+        document.getElementById("pageLoader").style.display = "flex";
+      }
+
+      function hideLoader() {
+        document.getElementById("pageLoader").style.display = "none";
+      }
+
+      const activePageName = "Dashboard"; // Update this per page
+      document.getElementById("activePage").textContent = activePageName;
+
+      function toggleMenu() {
+        const menu = document.getElementById("menuDropdown");
+        menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+      }
+
+      function toggleUserMenu() {
+        const menu = document.getElementById("userDropdown");
+        menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+      }
+
+      function logout() {
+        window.location.href = "login.html"; // Adjust to your login page
+      }
+
+      // Optional: Close dropdowns when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".top-nav") && !e.target.closest(".dropdown-menu")) {
+          document.getElementById("menuDropdown").style.display = "none";
+        }
+        if (!e.target.closest(".user-icon") && !e.target.closest(".user-dropdown")) {
+          document.getElementById("userDropdown").style.display = "none";
+        }
+      });
+
+      let usersData = [];
+      let selectedUserId = null;
+      let firstLoad = true;
+      loadUsers();
+        setInterval(loadUsers, 30000);  // ⏱ Set back to 30 seconds as you originally planned
+
+      async function loadUsers() {
+        if (firstLoad) showLoader();
+
+        const { data: users, error: userError } = await client
+          .from('users')
+          .select('*')
+          .order('created_at', { ascending: true });
+
+        if (userError) {
+          console.error("Error loading users:", userError);
+          if (firstLoad) hideLoader();
+          return;
+        }
+
+        const { data: investments, error: investError } = await client
+          .from('investments')
+          .select('id, user_id, investment_status');
+
+        if (investError) {
+          console.error("Error loading investments:", investError);
+          if (firstLoad) hideLoader();
+          return;
+        }
+
+        const { data: withdrawals, error: withdrawError } = await client
+          .from('withdraws')
+          .select('id, user_id, status');
+
+        if (withdrawError) {
+          console.error("Error loading withdrawals:", withdrawError);
+          if (firstLoad) hideLoader();
+          return;
+        }
+
+        const { data: chats, error: chatError } = await client
+          .from('chats')
+          .select('id, user_id, status, sender');
+
+        if (chatError) {
+          console.error("Error loading chats:", chatError);
+          if (firstLoad) hideLoader();
+          return;
+        }
+
+        const pendingMap = {};
+        investments.forEach(inv => {
+          if (inv.investment_status === 'pending') {
+            pendingMap[inv.user_id] = (pendingMap[inv.user_id] || 0) + 1;
+          }
+        });
+
+        const withdrawalMap = {};
+        withdrawals.forEach(w => {
+          if (w.status === 'pending') {
+            withdrawalMap[w.user_id] = (withdrawalMap[w.user_id] || 0) + 1;
+          }
+        });
+
+        const chatMap = {};
+        chats.forEach(chat => {
+          if (chat.sender === 'user' && chat.status !== 'read') {
+            chatMap[chat.user_id] = (chatMap[chat.user_id] || 0) + 1;
+          }
+        });
+
+        renderUserList(users, pendingMap, withdrawalMap, chatMap);
+
+        if (firstLoad) {
+          hideLoader();
+          firstLoad = false;
+        }
+      }
+
+      function renderUserList(data, pendingMap, withdrawalMap, chatMap) {
+        const container = document.getElementById('userListContainer');
+        let content = '';
+
+        data.forEach((user, index) => {
+          const fullName = `${user.first_name} ${user.middle_name} ${user.last_name}`.replace(/\s+/g, ' ').trim();
+          const isNew = user.confirmed !== true;
+          const pendingCount = pendingMap[user.id] || 0;
+          const withdrawalCount = withdrawalMap[user.id] || 0;
+          const chatCount = chatMap[user.id] || 0;  // ✅ NEW
+
+          let badges = '';
+
+          if (isNew) {
+            badges += `<span class="new-badge">NEW</span>`;
+          }
+
+          if (pendingCount > 0) {
+            badges += `<span class="pending-badge">${pendingCount}</span>`;
+          }
+
+          if (withdrawalCount > 0) {
+            badges += `<span class="withdrawal-badge">W${withdrawalCount}</span>`;
+          }
+
+          if (chatCount > 0) {
+            badges += `<span class="chat-badge">C${chatCount}</span>`;  // ✅ NEW
+          }
+
+          content += `
+            <div class="user-box" onclick="${user.confirmed ? `openUserDetailsModal(${index})` : `openUserModal(${index})`}">
+              <span>${index + 1}. ${fullName} ${badges}</span>
+            </div>
+          `;
+        });
+
+        usersData = data;
+        container.innerHTML = content;
+      }
+
+      function openUserModal(index) {
+        const user = usersData[index];
+        selectedUserId = user.id;
+
+        document.getElementById('modalFullName').textContent = `Name: ${user.first_name} ${user.middle_name} ${user.last_name}`.replace(/\s+/g, ' ').trim();
+        document.getElementById('modalUsername').textContent = `Username: ${user.username}`;
+        document.getElementById('modalUserId').textContent = `User ID: ${user.id}`;
+        document.getElementById('modalPhone').textContent = `Phone: ${user.phone_number}`;
+        document.getElementById('modalPassword').textContent = `Password: ${user.password}`;
+        document.getElementById('confirmUserBtn').style.display = user.confirmed ? 'none' : 'block';
+
+        document.getElementById('userModal').style.display = 'flex';
+      }
+
+      function closeUserModal() {
+        document.getElementById('userModal').style.display = 'none';
+      }
+
+      async function confirmUser() {
+        showLoader();
+        document.getElementById('confirmUserBtn').disabled = true;
+
+        const { error: updateError } = await client.from('users').update({ confirmed: true }).eq('id', selectedUserId);
+
+        if (!updateError) {
+          await client.from('notifications').insert([
+            { user_id: selectedUserId, message: 'Welcome to EPI Investments Company Ltd. Invest like never before!' }
+          ]);
+
+          alert('User confirmed successfully.');
+          closeUserModal();
+          loadUsers();
+        } else {
+          alert('Failed to confirm user.');
+          console.error(updateError);
+        }
+        document.getElementById('confirmUserBtn').disabled = false;
+
+        hideLoader();
+      }
+
+      let selectedFullUser = null;
+      function openUserDetailsModal(index) {
+        const user = usersData[index];
+
+        if (!user.confirmed) {
+          alert('This user is not yet confirmed.');
+          return;
+        }
+
+        selectedFullUser = user;
+        selectedUserId = user.id;
+
+        document.getElementById('userModalHeading').textContent = `Welcome to ${selectedFullUser.first_name} ${selectedFullUser.middle_name} ${selectedFullUser.last_name}`.replace(/\s+/g, ' ').trim();
+        document.getElementById('detailFullName').textContent = `Name: ${selectedFullUser.first_name} ${selectedFullUser.middle_name} ${selectedFullUser.last_name}`.replace(/\s+/g, ' ').trim();
+        document.getElementById('detailUsername').textContent = `Username: ${selectedFullUser.username}`;
+        document.getElementById('detailPhone').textContent = `Phone: ${selectedFullUser.phone_number}`;
+        document.getElementById('detailPassword').textContent = `Password: ${selectedFullUser.password}`;
+
+        document.getElementById('editFirstName').value = selectedFullUser.first_name;
+        document.getElementById('editMiddleName').value = selectedFullUser.middle_name;
+        document.getElementById('editLastName').value = selectedFullUser.last_name;
+        document.getElementById('editUsername').value = selectedFullUser.username;
+        document.getElementById('editPhone').value = selectedFullUser.phone_number;
+        document.getElementById('editPassword').value = selectedFullUser.password;
+        document.getElementById('editConfirmPassword').value = selectedFullUser.password;
+
+        document.getElementById('editUserFields').style.display = 'none';
+
+        document.getElementById('userDetailsModal').style.display = 'flex';
+
+        // ✅ Load the user's investments into Section 2:
+        loadUserInvestments(selectedUserId);
+        loadUserWithdrawals(selectedFullUser.id);
+        loadUserNotifications(selectedUserId);        
+        loadUserChats(selectedUserId); 
+        loadUserAnalysis(user.id);
+      }
+
+      function closeUserDetailsModal() {
+        document.getElementById('userDetailsModal').style.display = 'none';
+
+        // ✅ Clear chat refresh timer when modal closes
+        if (chatRefreshTimer) {
+          clearInterval(chatRefreshTimer);
+          chatRefreshTimer = null;
+        }
+      }
+
+      function toggleEditFields() {
+        const editSection = document.getElementById('editUserFields');
+        editSection.style.display = (editSection.style.display === 'none') ? 'block' : 'none';
+      }
+
+      async function saveUserEdits() {
+        const fname = document.getElementById('editFirstName').value.trim();
+        const mname = document.getElementById('editMiddleName').value.trim();
+        const lname = document.getElementById('editLastName').value.trim();
+        const uname = document.getElementById('editUsername').value.trim();
+        const phone = document.getElementById('editPhone').value.trim();
+        const pass = document.getElementById('editPassword').value.trim();
+        const confirmPass = document.getElementById('editConfirmPassword').value.trim();
+
+        if (pass !== confirmPass) {
+          alert('Passwords do not match.');
+          return;
+        }
+
+        showLoader();
+
+        const { data: existingUsers, error: checkError } = await client
+          .from('users')
+          .select('id')
+          .eq('username', uname)
+          .neq('id', selectedUserId);  // ✅ Ensure it's not the same user
+
+        if (checkError) {
+          hideLoader();
+          alert('Error checking username.');
+          return;
+        }
+
+        if (existingUsers.length > 0) {
+          hideLoader();
+          alert('Username already exists.');
+          return;
+        }
+
+        const { error: updateError } = await client.from('users').update({
+          first_name: fname,
+          middle_name: mname,
+          last_name: lname,
+          username: uname,
+          phone_number: phone,
+          password: pass
+        }).eq('id', selectedUserId);
+
+        hideLoader();
+
+        if (!updateError) {
+          alert('User updated successfully.');
+          loadUsers();
+          openUserDetailsModal(usersData.findIndex(u => u.id === selectedUserId));  // Refresh modal data
+        } else {
+          alert('Failed to update user.');
+          console.error(updateError);
+        }
+      }
+
+      function formatDateTime(dateString) {
+        if (!dateString) return 'Not Available';
+        const dateObj = new Date(dateString);
+        const date = dateObj.toLocaleDateString('en-GB');
+        const time = dateObj.toLocaleTimeString('en-GB', { hour12: false });
+        return `${date} ${time}`;
+      }
+
+      async function loadUserInvestments(userId) {
+        const container = document.getElementById('userInvestmentsContainer');
+        container.innerHTML = '<p>Loading investments...</p>';
+
+        const { data, error } = await client
+          .from('investments')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          container.innerHTML = '<p>Failed to load investments.</p>';
+          console.error(error);
+          return;
+        }
+
+        if (!data.length) {
+          container.innerHTML = '<p>No investments found for this user.</p>';
+          return;
+        }
+
+        let content = '';
+        data.forEach((inv, idx) => {
+          const isApproved = inv.investment_status === 'approved';
+          const approveBtn = isApproved ? '' : `<button onclick="approveInvestment('${inv.id}')">Approve</button>`;
+
+          content += `
+            <div class="investment-card">
+              <h4>Investment ${idx + 1}</h4>
+              <div class="investment-line">Principal: ${inv.principal}</div>
+              <div class="investment-line">Rate: ${inv.compounding_rate}% | Daily: ${inv.daily_earning}</div>
+              <div class="investment-line">Earnings Balance: ${inv.earnings_balance}</div>
+              <div class="investment-line">Total Earnings: ${inv.total_earnings}</div>
+              <div class="investment-line">Status: ${inv.investment_status}</div>
+              <div class="investment-buttons">
+                ${approveBtn}
+                <button onclick="toggleInvestmentDetails('${inv.id}')">Details</button>
+              </div>
+              <div id="inv-details-${inv.id}" class="investment-details">
+                <div>Investment ID: ${inv.id}</div>
+                <div>Principal: ${inv.principal}</div>
+                <div>Rate: ${inv.compounding_rate}%</div>
+                <div>Daily Earning: ${inv.daily_earning}</div>
+                <div>Earnings Balance: ${inv.earnings_balance}</div>
+                <div>Total Earnings: ${inv.total_earnings}</div>
+                <div>Status: ${inv.investment_status}</div>
+                <div>Transaction ID: ${inv.transaction_id || 'N/A'}</div>
+                <div>Approval Time: ${inv.approval_time ? formatDateTime(inv.approval_time) : 'Not Approved'}</div>
+                <div>Last Earning Update: ${inv.last_earning_update ? formatDateTime(inv.last_earning_update) : 'Not Available'}</div>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = content;
+      }
+
+      function toggleInvestmentDetails(investmentId) {
+        const details = document.getElementById(`inv-details-${investmentId}`);
+        if (details.style.display === 'block') {
+          details.style.display = 'none';
+        } else {
+          details.style.display = 'block';
+        }
+      }
+
+      async function approveInvestment(investmentId) {
+        const confirmAction = confirm('Are you sure you want to approve this investment?');
+        if (!confirmAction) return;
+
+        showLoader();
+
+        const now = new Date().toISOString();
+
+        const { error } = await client
+          .from('investments')
+          .update({ investment_status: 'approved', approval_time: now, last_earning_update: now })
+          .eq('id', investmentId);
+
+        hideLoader();
+
+        if (!error) {
+          alert('Investment approved successfully.');
+          loadUserInvestments(selectedUserId);
+        } else {
+          alert('Failed to approve investment.');
+          console.error(error);
+        }
+      }
+
+      async function loadUserWithdrawals(userId) {
+        const container = document.getElementById('userWithdrawalsContainer');
+        container.innerHTML = '<p style="font-size: 12px; color: #888;">Loading withdrawals...</p>';
+
+        const { data, error } = await client
+          .from('withdraws')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          console.error('Error loading withdrawals:', error);
+          container.innerHTML = '<p style="color: red;">Failed to load withdrawals.</p>';
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          container.innerHTML = '<p style="font-size: 12px; color: #888;">No withdrawals found for this user.</p>';
+          return;
+        }
+
+        let content = '';
+
+        data.forEach((withdraw, idx) => {
+          const statusText = withdraw.status ? withdraw.status : 'pending';
+          const showApproveButton = statusText === 'pending';
+          const createdAt = new Date(withdraw.created_at);
+          const dateStr = createdAt.toLocaleDateString('en-GB');   // e.g. 05/07/2025
+          const timeStr = createdAt.toLocaleTimeString('en-GB', { hour12: false }); // e.g. 11:22:00
+
+          content += `
+            <div class="withdrawal-box">
+              <strong>${idx + 1}. ${withdraw.full_name || 'N/A'} &nbsp;&nbsp; ${dateStr} ${timeStr}</strong><br>
+              Username: ${withdraw.username || 'N/A'}<br>
+              Phone: ${withdraw.phone || 'N/A'}<br>
+              Investment ID: ${withdraw.investment_id || 'N/A'}<br>
+              Amount: KES ${withdraw.amount || 0}<br>
+              Status: ${statusText.toUpperCase()}<br>
+              ${showApproveButton ? `<button onclick="approveWithdrawal('${withdraw.id}')">Approve</button>` : ''}
+            </div>
+          `;
+        });
+
+        container.innerHTML = content;
+      }
+
+      async function approveWithdrawal(withdrawalId) {
+        const confirmApprove = confirm("Are you sure you want to approve this withdrawal?");
+        if (!confirmApprove) return;
+
+        showLoader();
+
+        const { error } = await client
+          .from('withdraws')
+          .update({ status: 'approved' })
+          .eq('id', withdrawalId);
+
+        hideLoader();
+
+        if (!error) {
+          alert('Withdrawal approved successfully.');
+          loadUserWithdrawals(selectedUserId);  // 🔄 Reload this user's withdrawals
+        } else {
+          console.error('Error approving withdrawal:', error);
+          alert('Failed to approve withdrawal.');
+        }
+      }
+
+      async function loadUserNotifications(userId) {
+        const container = document.getElementById('userNotificationsContainer');
+        container.innerHTML = '<p>Loading notifications...</p>';
+
+        const { data, error } = await client
+          .from('notifications')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          container.innerHTML = '<p>Failed to load notifications.</p>';
+          console.error(error);
+          return;
+        }
+
+        if (!data.length) {
+          container.innerHTML = '<p>No notifications for this user yet.</p>';
+          return;
+        }
+
+        let content = '';
+        data.forEach(notif => {
+          const date = new Date(notif.created_at).toLocaleString();
+
+          content += `
+            <div class="notification-card">
+              <div class="notif-date">${date}</div>
+              <div class="notif-actions" onclick="showNotifActions('${notif.id}', '${notif.message.replace(/'/g, "\\'")}')">&#8942;</div>
+              <div class="notif-message">${notif.message}</div>
+            </div>
+          `;
+        });
+        container.innerHTML = content;
+      }
+
+      function showNotifActions(notifId, message) {
+        const choice = prompt(`Edit the notification message below, or leave as-is to delete:\n\n${message}`);
+
+        if (choice === null) return; // Cancelled
+
+        if (choice.trim() === '') {
+          const confirmDelete = confirm('Delete this notification?');
+          if (confirmDelete) deleteNotification(notifId);
+        } else {
+          updateNotification(notifId, choice.trim());
+        }
+      }
+
+      async function updateNotification(notifId, newMessage) {
+        showLoader();
+
+        const { error } = await client
+          .from('notifications')
+          .update({ message: newMessage })
+          .eq('id', notifId);
+
+        hideLoader();
+
+        if (!error) {
+          alert('Notification updated.');
+          loadUserNotifications(selectedUserId);
+        } else {
+          alert('Failed to update notification.');
+          console.error(error);
+        }
+      }
+
+      async function deleteNotification(notifId) {
+        showLoader();
+
+        const { error } = await client
+          .from('notifications')
+          .delete()
+          .eq('id', notifId);
+
+        hideLoader();
+
+        if (!error) {
+          alert('Notification deleted.');
+          loadUserNotifications(selectedUserId);
+        } else {
+          alert('Failed to delete notification.');
+          console.error(error);
+        }
+      }
+
+      async function sendNotification() {
+        const message = document.getElementById('notificationMessage').value.trim();
+
+        if (!message) {
+          alert('Please enter a message.');
+          return;
+        }
+
+        showLoader();
+
+        const { error } = await client.from('notifications').insert([
+          { user_id: selectedUserId, message: message }
+        ]);
+
+        hideLoader();
+
+        if (!error) {
+          alert('Notification sent successfully.');
+          document.getElementById('notificationMessage').value = '';
+          loadUserNotifications(selectedUserId);
+        } else {
+          alert('Failed to send notification.');
+          console.error(error);
+        }
+      }
+
+      let chatRefreshTimer = null;  // Global timer reference
+      let chatsData = []; 
+      async function loadUserChats(userId) {
+        const { data: chats, error } = await client
+          .from('chats')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: true });
+
+        const chatBox = document.getElementById('chatBox');
+        if (error) {
+          chatBox.innerHTML = '<p>Failed to load chats.</p>';
+          console.error(error);
+          return;
+        }
+
+        if (!chats.length) {
+          chatBox.innerHTML = '<p>No messages yet.</p>';
+          return;
+        }
+
+        chatsData = chats;  // ✅ Store chats globally
+        let content = '';
+        chats.forEach(chat => {
+          const isAdmin = chat.sender === 'admin';
+          const statusTick = !isAdmin && chat.status === 'read' ? '<div class="chat-tick">✔ Read</div>' : '';
+          const dateStr = new Date(chat.created_at).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' });
+
+          content += `
+            <div class="chat-message ${isAdmin ? 'admin' : 'user'}">
+              <div class="chat-date">${dateStr}</div>
+              <div class="chat-actions" onclick="openChatOptions('${chat.id}', '${isAdmin ? 'admin' : 'user'}', '${chat.status}')">⋮</div>
+              <div>${chat.message}</div>
+              ${statusTick}
+            </div>
+          `;
+        });
+
+        chatBox.innerHTML = content;
+        chatBox.scrollTop = chatBox.scrollHeight;  // Auto scroll to latest
+
+        // Always clear existing timer
+        if (chatRefreshTimer) {
+          clearInterval(chatRefreshTimer);
+          chatRefreshTimer = null;
+        }
+        // Start fresh timer with correct userId
+        chatRefreshTimer = setInterval(() => {
+          loadUserChats(userId);
+        }, 10000);
+      }
+
+      async function sendAdminMessage() {
+        const message = document.getElementById('adminChatMessage').value.trim();
+        if (!message) return;
+
+        showLoader();
+
+        await client.from('chats').insert([{ user_id: selectedUserId, sender: 'admin', message }]);
+
+        // ✅ Mark ALL previous unread user messages as read
+        await client
+          .from('chats')
+          .update({ status: 'read' })
+          .eq('user_id', selectedUserId)
+          .eq('sender', 'user')
+          .is('status', null);
+
+        document.getElementById('adminChatMessage').value = '';
+        await loadUserChats(selectedUserId);
+        hideLoader();
+      }
+
+      function openChatOptions(chatId, senderType, currentStatus) {
+        const menu = document.getElementById('chatOptionsMenu');
+        const list = document.getElementById('chatOptionsList');
+
+        // Position menu near cursor (optional: improve later)
+        menu.style.display = 'block';
+        menu.style.top = event.pageY + 'px';
+        menu.style.left = event.pageX + 'px';
+
+        let items = '';
+
+        if (senderType === 'user') {
+          items += `<li onclick="markChatRead('${chatId}')">Mark as Read</li>`;
+          items += `<li onclick="markChatUnread('${chatId}')">Mark as Unread</li>`;
+          items += `<li onclick="deleteChat('${chatId}')">Delete Message</li>`;
+        } else if (senderType === 'admin') {
+          items += `<li onclick="editAdminChat('${chatId}')">Edit Message</li>`;
+          items += `<li onclick="deleteChat('${chatId}')">Delete Message</li>`;
+        }
+
+        list.innerHTML = items;
+      }
+
+      // Close menu when clicking anywhere else
+      document.addEventListener('click', () => {
+        document.getElementById('chatOptionsMenu').style.display = 'none';
+      }, true);
+
+      async function markChatRead(chatId) {
+        const confirmAction = confirm("Mark this message as read?");
+        if (!confirmAction) return;
+
+        showLoader();
+        await client.from('chats').update({ status: 'read' }).eq('id', chatId);
+        await loadUserChats(selectedUserId);
+        hideLoader();
+      }
+
+      async function markChatUnread(chatId) {
+        const confirmAction = confirm("Mark this message as unread?");
+        if (!confirmAction) return;
+
+        showLoader();
+        await client.from('chats').update({ status: null }).eq('id', chatId);
+        await loadUserChats(selectedUserId);
+        hideLoader();
+      }
+
+      async function deleteChat(chatId) {
+        const confirmDelete = confirm("Are you sure you want to delete this message?");
+        if (!confirmDelete) return;
+
+        showLoader();
+        await client.from('chats').delete().eq('id', chatId);
+        await loadUserChats(selectedUserId);
+        hideLoader();
+      }
+
+      async function editAdminChat(chatId) {
+        const chatToEdit = chatsData.find(c => c.id === chatId);
+        const currentMessage = chatToEdit ? chatToEdit.message : '';
+
+        const newMsg = prompt("Edit your message:", currentMessage);
+        if (!newMsg || newMsg.trim() === '') return;
+
+        showLoader();
+        await client.from('chats').update({ message: newMsg.trim() }).eq('id', chatId);
+        await loadUserChats(selectedUserId);
+        hideLoader();
+      }
+
+      async function loadUserAnalysis(userId) {
+        const { data: investments, error: investError } = await client
+          .from('investments')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: true });
+
+        const { data: withdrawals, error: withdrawError } = await client
+          .from('withdraws')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('status', 'completed');
+
+        if (investError || withdrawError) {
+          console.error(investError || withdrawError);
+          return;
+        }
+
+        const investmentContainer = document.getElementById('investmentAnalysisContainer');
+        investmentContainer.innerHTML = '';
+
+        let totalPrincipal = 0;
+        let totalEarningsBalance = 0;
+        let totalTotalEarnings = 0;
+        let totalCompletedWithdrawals = 0;
+
+        investments.forEach((inv, index) => {
+          const investmentWithdrawals = withdrawals
+            .filter(w => w.investment_id === inv.id)
+            .reduce((sum, w) => sum + parseFloat(w.amount), 0);
+
+          totalPrincipal += parseFloat(inv.principal || 0);
+          totalEarningsBalance += parseFloat(inv.earnings_balance || 0);
+          totalTotalEarnings += parseFloat(inv.total_earnings || 0);
+          totalCompletedWithdrawals += investmentWithdrawals;
+
+          const box = `
+            <div class="investment-box">
+              <h4>Investment ${index + 1}</h4>
+              <p><strong>ID:</strong> ${inv.id}</p>
+              <p><strong>Principal:</strong> Ksh.${parseFloat(inv.principal || 0).toFixed(2)}</p>
+              <p><strong>Completed Withdrawals:</strong> Ksh.${investmentWithdrawals.toFixed(2)}</p>
+            </div>
+          `;
+          investmentContainer.insertAdjacentHTML('beforeend', box);
+        });
+
+        document.getElementById('totalInvestments').innerText = investments.length;
+        document.getElementById('totalPrincipal').innerText = totalPrincipal.toFixed(2);
+        document.getElementById('totalEarningsBalance').innerText = totalEarningsBalance.toFixed(2);
+        document.getElementById('totalTotalEarnings').innerText = totalTotalEarnings.toFixed(2);
+        document.getElementById('totalCompletedWithdrawals').innerText = totalCompletedWithdrawals.toFixed(2);
+      }
+  </script>
+</body>
+</html>
